@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import ReservasTurismo from './pages/Reservas';
 import { supabase } from './lib/supabase';
+import { DEFAULT_EMPRESAS } from './lib/mockData';
 
 export function App() {
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem('reservas_theme') === 'dark';
   });
   const [selectedCompany, setSelectedCompany] = useState<string>('GLOBAL');
-  const [companies, setCompanies] = useState<{ id: string; nombre: string }[]>([]);
+  const [companies, setCompanies] = useState<{ id: string; nombre: string }[]>(DEFAULT_EMPRESAS);
 
   useEffect(() => {
     if (darkMode) {
@@ -21,11 +22,17 @@ export function App() {
   }, [darkMode]);
 
   useEffect(() => {
-    supabase.from('empresa').select('id, nombre').then(({ data }) => {
-      if (data && data.length > 0) {
-        setCompanies(data);
+    const fetchCompanies = async () => {
+      try {
+        const { data, error } = await supabase.from('empresa').select('id, nombre');
+        if (!error && data && data.length > 0) {
+          setCompanies(data);
+        }
+      } catch {
+        // Keep DEFAULT_EMPRESAS
       }
-    });
+    };
+    fetchCompanies();
   }, []);
 
   return (

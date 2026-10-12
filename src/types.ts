@@ -70,6 +70,9 @@ export interface ReservaTurismo {
 export interface Conductor {
   id: string;
   nombre: string;
+  telefono?: string;
+  rol?: string;
+  licencia?: string;
   estado: string;
 }
 
@@ -77,10 +80,21 @@ export interface Vehiculo {
   id: string;
   patente: string;
   marca?: string;
+  modelo?: string;
+  tipo?: string;
+  capacidadPax?: number;
   estado?: string;
 }
 
 export interface Empresa {
   id: string;
   nombre: string;
+}
+
+export interface Ruta {
+  id: string;
+  nombre: string;
+  origen: string;
+  destino: string;
+  enlaceMapa?: string;
 }
