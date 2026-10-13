@@ -1,9 +1,10 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { FileText, Plus, Search, Calendar, X, Briefcase, Download, Paperclip, ChevronRight, CheckCircle2, Truck, Wrench, Info, AlertCircle } from 'lucide-react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { FileText, Plus, Search, Calendar, X, Briefcase, Download, Paperclip, ChevronRight, CheckCircle2, Truck, Info, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../../lib/supabase';
 import { useCompany } from '../../contexts/CompanyContext';
 import { useAuth } from '../../context/AuthContext';
+import { DEFAULT_VEHICULOS } from '../../lib/mockData';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(value);
@@ -19,14 +20,15 @@ type Contrato = {
   activo: boolean;
   tipo: string;
   vehiculosAsignados: string[];
-  maquinasAsignadas: string[];
+  maquinasAsignadas?: string[];
+  archivoNombre?: string;
 };
 
 export default function Contratos() {
   const { activeCompanyId } = useCompany();
   const { profile } = useAuth();
   const [contratos, setContratos] = useState<Contrato[]>([]);
-  const [vehiculosDisponibles, setVehiculosDisponibles] = useState<{ id: string; patente: string; tipo: string }[]>([]);
+  const [vehiculosDisponibles, setVehiculosDisponibles] = useState<any[]>(DEFAULT_VEHICULOS);
   const [clientesExistentes, setClientesExistentes] = useState<string[]>([]);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -36,6 +38,10 @@ export default function Contratos() {
   const [dateFilter, setDateFilter] = useState('');
   const [toastMessage, setToastMessage] = useState('');
 
+  // Contract PDF Attachment Ref & State
+  const contractFileInputRef = useRef<HTMLInputElement>(null);
+  const [contratoArchivo, setContratoArchivo] = useState<{ nombre: string; tamano: string } | null>(null);
+
   const [userCompanies, setUserCompanies] = useState<{id: string, nombre: string}[]>([]);
 
   // Form states
@@ -44,8 +50,8 @@ export default function Contratos() {
     cliente: '',
     rut: '',
     descripcion: '',
-    tipo: 'Transporte Personal',
-    zona: 'Norte',
+    tipo: 'Transporte de Pasajeros',
+    zona: 'Región Metropolitana / Santiago',
     inicio: '',
     termino: '',
     valor: '',
@@ -55,6 +61,17 @@ export default function Contratos() {
   };
   
   const [formData, setFormData] = useState(emptyForm);
+
+  const handleContractFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setContratoArchivo({
+        nombre: file.name,
+        tamano: `${(file.size / 1024).toFixed(1)} KB`
+      });
+      showToast(`Archivo "${file.name}" cargado exitosamente.`);
+    }
+  };
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -505,21 +522,31 @@ export default function Contratos() {
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Tipo de Servicio</label>
-                          <select value={formData.tipo} onChange={e => setFormData({...formData, tipo: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-sm font-medium outline-none focus:border-indigo-500 transition-all text-slate-900 dark:text-white">
-                            <option>Transporte Personal</option>
-                            <option>Carga General</option>
-                            <option>Sobredimensionada</option>
-                            <option>Refrigerada</option>
-                            <option>MATPEL (Peligrosa)</option>
+                          <select 
+                            value={formData.tipo} 
+                            onChange={e => setFormData({...formData, tipo: e.target.value})} 
+                            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-sm font-medium outline-none focus:border-indigo-500 transition-all text-slate-900 dark:text-white cursor-pointer"
+                          >
+                            <option value="Transporte de Pasajeros">Transporte de Pasajeros</option>
+                            <option value="Servicio Aeropuerto">Servicio Aeropuerto</option>
+                            <option value="Viaje Especial">Viaje Especial</option>
+                            <option value="Convenio Traslado">Convenio Traslado</option>
+                            <option value="Turismo Receptivo / Tours">Turismo Receptivo / Tours</option>
+                            <option value="Minera / Faena Cordillera">Minera / Faena Cordillera</option>
                           </select>
                         </div>
                         <div>
                           <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Zona Operación</label>
-                          <select value={formData.zona} onChange={e => setFormData({...formData, zona: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-sm font-medium outline-none focus:border-indigo-500 transition-all text-slate-900 dark:text-white">
-                            <option>Norte</option>
-                            <option>Centro</option>
-                            <option>Sur</option>
-                            <option>Internacional</option>
+                          <select 
+                            value={formData.zona} 
+                            onChange={e => setFormData({...formData, zona: e.target.value})} 
+                            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-sm font-medium outline-none focus:border-indigo-500 transition-all text-slate-900 dark:text-white cursor-pointer"
+                          >
+                            <option value="Región Metropolitana / Santiago">Región Metropolitana / Santiago</option>
+                            <option value="Valparaíso / Viña del Mar">Valparaíso / Viña del Mar</option>
+                            <option value="Zona Norte / Minería">Zona Norte / Minería</option>
+                            <option value="Zona Sur / Lagos">Zona Sur / Lagos</option>
+                            <option value="Interprovincial / Internacional">Interprovincial / Internacional</option>
                           </select>
                         </div>
                       </div>
@@ -559,7 +586,7 @@ export default function Contratos() {
                       </div>
 
                       <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
-                         <input type="checkbox" checked={formData.renovacion_auto} onChange={e => setFormData({...formData, renovacion_auto: e.target.checked})} id="renovacion_auto" className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600 dark:border-slate-700 dark:text-slate-100" />
+                         <input type="checkbox" checked={formData.renovacion_auto} onChange={e => setFormData({...formData, renovacion_auto: e.target.checked})} id="renovacion_auto" className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600 dark:border-slate-700 dark:text-slate-100 cursor-pointer" />
                          <label htmlFor="renovacion_auto" className="text-sm font-bold text-slate-700 dark:text-slate-300 cursor-pointer">Renovación Automática</label>
                       </div>
                     </div>
@@ -567,57 +594,138 @@ export default function Contratos() {
                     <div>
                       <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider mb-4 border-b border-slate-100 dark:border-slate-800 pb-2">4. Documentos Legales</h3>
                       
-                      <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-6 text-center hover:border-indigo-400 dark:hover:border-indigo-600 transition-colors bg-slate-50/50 dark:bg-slate-950 cursor-pointer">
-                        <Paperclip className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                        <p className="text-sm font-bold text-slate-700 dark:text-slate-300">Arrastra el archivo PDF del contrato firmado</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">o haz clic para explorar</p>
-                      </div>
+                      <input 
+                        type="file" 
+                        ref={contractFileInputRef} 
+                        onChange={handleContractFileChange} 
+                        accept=".pdf,.doc,.docx,image/*" 
+                        className="hidden" 
+                      />
+
+                      {!contratoArchivo ? (
+                        <div 
+                          onClick={() => contractFileInputRef.current?.click()}
+                          className="border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-500 rounded-2xl p-6 text-center transition-all bg-slate-50/50 dark:bg-slate-950 cursor-pointer group hover:bg-indigo-50/20 dark:hover:bg-indigo-950/20"
+                        >
+                          <Paperclip className="w-8 h-8 text-slate-400 group-hover:text-indigo-500 mx-auto mb-2 transition-colors" />
+                          <p className="text-sm font-bold text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                            Arrastra el archivo PDF del contrato firmado
+                          </p>
+                          <p className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold mt-1">
+                            o haz clic para explorar en tu equipo
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="border border-indigo-200 dark:border-indigo-800/80 bg-indigo-50/50 dark:bg-indigo-950/30 rounded-2xl p-4 flex items-center justify-between">
+                          <div className="flex items-center gap-3 overflow-hidden">
+                            <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                              <FileText className="w-5 h-5" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate max-w-[220px] sm:max-w-xs">
+                                {contratoArchivo.nombre}
+                              </div>
+                              <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-2 mt-0.5">
+                                <span>{contratoArchivo.tamano}</span>
+                                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">• Listo para adjuntar</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => contractFileInputRef.current?.click()}
+                              className="px-2.5 py-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 rounded-lg transition-colors cursor-pointer"
+                            >
+                              Cambiar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setContratoArchivo(null)}
+                              className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                              title="Quitar archivo"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                   </div>
                 </div>
 
                 <div className="md:col-span-2 mt-2">
-                  <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider mb-4 border-b border-slate-100 dark:border-slate-800 pb-2">5. Asignación de Flota y Maquinaria (Opcional)</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 mb-4 border-b border-slate-100 dark:border-slate-800 gap-2">
                     <div>
-                      <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 flex justify-between">Vehículos <span className="text-xs text-indigo-600 font-medium">Múltiples</span></label>
-                      <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 h-48 overflow-y-auto space-y-2">
-                        {vehiculosDisponibles.filter(v => v.tipo !== 'Maquinaria').map(v => (
-                          <label key={v.id} className="flex items-center gap-3 p-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-100 dark:border-slate-800 cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-600 transition-colors shadow-sm">
-                            <input 
-                              type="checkbox" 
-                              checked={formData.vehiculosAsignados.includes(v.id)}
-                              onChange={() => toggleVehiculoAsignado(v.id)}
-                              className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100" 
-                            />
-                            <div className="flex items-center gap-2">
-                               <Truck className="w-4 h-4 text-slate-400" />
-                               <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{v.patente} - {v.tipo}</span>
-                            </div>
-                          </label>
-                        ))}
-                      </div>
+                      <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                        5. Asignación de Flota de Transporte (Opcional)
+                      </h3>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        Seleccione una o más unidades de la flota disponibles para operar este contrato
+                      </p>
                     </div>
-                    <div>
-                      <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 flex justify-between">Maquinaria <span className="text-xs text-indigo-600 font-medium">Múltiples</span></label>
-                      <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 h-48 overflow-y-auto space-y-2">
-                        {vehiculosDisponibles.filter(v => v.tipo === 'Maquinaria').map(m => (
-                          <label key={m.id} className="flex items-center gap-3 p-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-100 dark:border-slate-800 cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-600 transition-colors shadow-sm">
-                            <input 
-                              type="checkbox" 
-                              checked={formData.vehiculosAsignados.includes(m.id)}
-                              onChange={() => toggleVehiculoAsignado(m.id)}
-                              className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100" 
-                            />
-                            <div className="flex items-center gap-2">
-                               <Wrench className="w-4 h-4 text-slate-400" />
-                               <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{m.patente}</span>
-                            </div>
-                          </label>
-                        ))}
-                      </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+                        {formData.vehiculosAsignados.length} {formData.vehiculosAsignados.length === 1 ? 'vehículo asociado' : 'vehículos asociados'}
+                      </span>
                     </div>
+                  </div>
+
+                  {/* Grid de Vehículos de Transporte */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 max-h-56 overflow-y-auto p-1 custom-scrollbar">
+                    {vehiculosDisponibles.map((v: any) => {
+                      const isAssigned = formData.vehiculosAsignados.includes(v.id) || formData.vehiculosAsignados.includes(v.patente);
+
+                      return (
+                        <div
+                          key={v.id || v.patente}
+                          onClick={() => toggleVehiculoAsignado(v.id || v.patente)}
+                          className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
+                            isAssigned
+                              ? 'bg-indigo-50/80 dark:bg-indigo-950/40 border-indigo-500 shadow-sm ring-1 ring-indigo-500'
+                              : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <div className="flex items-center gap-2.5">
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                                isAssigned ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                              }`}>
+                                <Truck className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <span className="font-mono font-black text-sm text-slate-900 dark:text-white block">
+                                  {v.patente}
+                                </span>
+                                <span className="text-[10px] text-slate-400 font-medium">
+                                  {v.tipo || 'Van'}
+                                </span>
+                              </div>
+                            </div>
+
+                            <input
+                              type="checkbox"
+                              checked={isAssigned}
+                              onChange={() => {}}
+                              className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600 cursor-pointer mt-1"
+                            />
+                          </div>
+
+                          <div className="text-[11px] text-slate-600 dark:text-slate-300 font-medium truncate">
+                            {v.marca || ''} {v.modelo || ''}
+                          </div>
+
+                          <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 text-[10px] flex items-center justify-between">
+                            <span className="text-slate-400">Capacidad:</span>
+                            <span className="font-bold text-slate-700 dark:text-slate-300">
+                              {v.capacidadPax ? `${v.capacidadPax} Pax` : '15+1 Pax'}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -749,44 +857,26 @@ export default function Contratos() {
 
                     {/* Flota Asignada */}
                     <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
-                      <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3 dark:text-slate-400">Flota y Maquinaria Asignada</h4>
+                      <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3 dark:text-slate-400">Flota de Transporte Asignada</h4>
                       
-                      {selectedContrato.vehiculosAsignados.length === 0 && selectedContrato.maquinasAsignadas.length === 0 ? (
+                      {selectedContrato.vehiculosAsignados.length === 0 ? (
                         <div className="flex items-center gap-2 text-slate-500 text-sm dark:text-slate-400">
                           <AlertCircle className="w-4 h-4" />
                           <span>No hay flota asignada a este contrato.</span>
                         </div>
                       ) : (
-                        <div className="space-y-4">
-                          {selectedContrato.vehiculosAsignados.length > 0 && (
-                            <div>
-                               <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
-                                 <Truck className="w-3.5 h-3.5 text-indigo-500" /> Vehículos
-                               </p>
-                               <div className="flex flex-wrap gap-2">
-                                 {selectedContrato.vehiculosAsignados.map(v => (
-                                   <span key={v} className="px-2.5 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 shadow-sm">
-                                     {v}
-                                   </span>
-                                 ))}
-                               </div>
-                            </div>
-                          )}
-                          
-                          {selectedContrato.maquinasAsignadas.length > 0 && (
-                            <div>
-                               <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
-                                 <Wrench className="w-3.5 h-3.5 text-indigo-500" /> Maquinaria
-                               </p>
-                               <div className="flex flex-wrap gap-2">
-                                 {selectedContrato.maquinasAsignadas.map(m => (
-                                   <span key={m} className="px-2.5 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 shadow-sm">
-                                     {m}
-                                   </span>
-                                 ))}
-                               </div>
-                            </div>
-                          )}
+                        <div>
+                          <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
+                            <Truck className="w-3.5 h-3.5 text-indigo-500" /> Vehículos Homologados ({selectedContrato.vehiculosAsignados.length})
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {selectedContrato.vehiculosAsignados.map(v => (
+                              <span key={v} className="px-2.5 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 shadow-sm flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                                {v}
+                              </span>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>
