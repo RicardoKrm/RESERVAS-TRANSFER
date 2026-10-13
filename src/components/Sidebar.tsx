@@ -1,12 +1,13 @@
 import React from 'react';
 import { 
-  Calendar, CalendarClock, Briefcase, Map as MapIcon, 
+  LayoutDashboard, Calendar, CalendarClock, Briefcase, Map as MapIcon, 
   FileCheck, UserCircle, Radio, History, Plane, ChevronLeft, ChevronRight,
   Sparkles, LogOut, ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export type NavTab = 
+  | 'dashboard'
   | 'reservas' 
   | 'programacion' 
   | 'contratos' 
@@ -27,6 +28,14 @@ export function Sidebar({ activeTab, setActiveTab, collapsed, setCollapsed }: Si
   const { profile, canAccessTab, signOut } = useAuth();
 
   const allMenuItems = [
+    {
+      id: 'dashboard' as NavTab,
+      label: 'Dashboard Ejecutivo',
+      shortLabel: 'Dashboard',
+      icon: LayoutDashboard,
+      badge: 'KPIs',
+      badgeColor: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20'
+    },
     {
       id: 'reservas' as NavTab,
       label: 'Pizarra de Reservas',

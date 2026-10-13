@@ -10,6 +10,7 @@ import ControlDocumental from './pages/operaciones/ControlDocumental';
 import PortalConductor from './pages/operaciones/PortalConductor';
 import GPS from './pages/operaciones/GPS';
 import Historial from './pages/operaciones/Historial';
+import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CompanyProvider, useCompany } from './contexts/CompanyContext';
@@ -25,7 +26,7 @@ function AppContent() {
   });
   const [collapsed, setCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState<NavTab>(() => {
-    return (localStorage.getItem('reservas_active_tab') as NavTab) || 'reservas';
+    return (localStorage.getItem('reservas_active_tab') as NavTab) || 'dashboard';
   });
   const [companies, setCompanies] = useState<{ id: string; nombre: string }[]>(DEFAULT_EMPRESAS);
 
@@ -138,6 +139,8 @@ function AppContent() {
   // Standard SaaS ERP Layout for Admin, Tráfico, Ventas, Control Documental
   const renderActiveModule = () => {
     switch (activeTab) {
+      case 'dashboard':
+        return <Dashboard onNavigate={(tab) => setActiveTab(tab)} />;
       case 'reservas':
         return <ReservasTurismo activeCompanyId={activeCompanyId} />;
       case 'programacion':
@@ -155,7 +158,7 @@ function AppContent() {
       case 'historial':
         return <Historial />;
       default:
-        return <ReservasTurismo activeCompanyId={activeCompanyId} />;
+        return <Dashboard onNavigate={(tab) => setActiveTab(tab)} />;
     }
   };
 

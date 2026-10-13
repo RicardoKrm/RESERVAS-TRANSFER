@@ -56,9 +56,9 @@ export const DEMO_PROFILES: Record<string, DemoUserConfig> = {
     rolNombre: 'Súper Administrador',
     color: 'from-amber-500 to-orange-600',
     badge: 'Acceso Total',
-    descripcion: 'Control absoluto de los 8 módulos, contratos corporativos, gestión y márgenes.',
-    panel_inicio: 'reservas',
-    allowed_tabs: ['reservas', 'programacion', 'contratos', 'rutas', 'documentacion', 'portal-conductor', 'gps', 'historial']
+    descripcion: 'Control absoluto de los 9 módulos, contratos corporativos, gestión y márgenes.',
+    panel_inicio: 'dashboard',
+    allowed_tabs: ['dashboard', 'reservas', 'programacion', 'contratos', 'rutas', 'documentacion', 'portal-conductor', 'gps', 'historial']
   },
   trafico: {
     key: 'trafico',
@@ -74,8 +74,8 @@ export const DEMO_PROFILES: Record<string, DemoUserConfig> = {
     color: 'from-blue-600 to-indigo-600',
     badge: 'Operativa & GPS',
     descripcion: 'Pizarra de reservas, despacho en vivo, cuadrantes, rutas y telemetría de flota.',
-    panel_inicio: 'programacion',
-    allowed_tabs: ['reservas', 'programacion', 'rutas', 'portal-conductor', 'gps', 'historial']
+    panel_inicio: 'dashboard',
+    allowed_tabs: ['dashboard', 'reservas', 'programacion', 'rutas', 'portal-conductor', 'gps', 'historial']
   },
   ventas: {
     key: 'ventas',
@@ -91,8 +91,8 @@ export const DEMO_PROFILES: Record<string, DemoUserConfig> = {
     color: 'from-emerald-600 to-teal-600',
     badge: 'Comercial & Reservas',
     descripcion: 'Creación y agenda de traslados turísticos y aeropuerto; sin acceso a contratos o flota técnica.',
-    panel_inicio: 'reservas',
-    allowed_tabs: ['reservas', 'rutas']
+    panel_inicio: 'dashboard',
+    allowed_tabs: ['dashboard', 'reservas', 'rutas']
   },
   control: {
     key: 'control',
@@ -108,8 +108,8 @@ export const DEMO_PROFILES: Record<string, DemoUserConfig> = {
     color: 'from-violet-600 to-purple-600',
     badge: 'Flota & Decretos',
     descripcion: 'Monitoreo de revisiones técnicas, licencias, SOAP, Decreto 80 y bitácora de viajes.',
-    panel_inicio: 'documentacion',
-    allowed_tabs: ['documentacion', 'rutas', 'historial']
+    panel_inicio: 'dashboard',
+    allowed_tabs: ['dashboard', 'documentacion', 'rutas', 'historial']
   },
   conductor: {
     key: 'conductor',
@@ -225,8 +225,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               email: sUser.email || 'usuario@reservas.cl',
               estado: 'ACTIVO',
               cargo: 'Usuario Operativo',
-              panel_inicio: 'reservas',
-              allowed_tabs: ['reservas', 'programacion', 'contratos', 'rutas', 'documentacion', 'portal-conductor', 'gps', 'historial'],
+              panel_inicio: 'dashboard',
+              allowed_tabs: ['dashboard', 'reservas', 'programacion', 'contratos', 'rutas', 'documentacion', 'portal-conductor', 'gps', 'historial'],
               rol: {
                 nombre: 'Administrador',
                 tipo: 'ADMIN',
@@ -288,8 +288,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             email: sUser.email || cleanEmail,
             estado: 'ACTIVO',
             cargo: 'Operador del Sistema',
-            panel_inicio: 'reservas',
-            allowed_tabs: ['reservas', 'programacion', 'contratos', 'rutas', 'documentacion', 'portal-conductor', 'gps', 'historial'],
+            panel_inicio: 'dashboard',
+            allowed_tabs: ['dashboard', 'reservas', 'programacion', 'contratos', 'rutas', 'documentacion', 'portal-conductor', 'gps', 'historial'],
             rol: {
               nombre: 'Operador General',
               tipo: 'ADMIN',
@@ -323,8 +323,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email: cleanEmail,
         estado: 'ACTIVO',
         cargo: 'Administrador de Sucursal',
-        panel_inicio: 'reservas',
-        allowed_tabs: ['reservas', 'programacion', 'contratos', 'rutas', 'documentacion', 'portal-conductor', 'gps', 'historial'],
+        panel_inicio: 'dashboard',
+        allowed_tabs: ['dashboard', 'reservas', 'programacion', 'contratos', 'rutas', 'documentacion', 'portal-conductor', 'gps', 'historial'],
         rol: {
           nombre: 'Administrador',
           tipo: 'ADMIN',

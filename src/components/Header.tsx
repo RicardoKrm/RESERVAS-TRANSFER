@@ -24,6 +24,10 @@ export function Header({
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const titles: Record<NavTab, { title: string; subtitle: string }> = {
+    'dashboard': {
+      title: 'Dashboard Ejecutivo & Métricas del Negocio',
+      subtitle: 'KPIs operativos, semáforo de vencimientos legales y trazabilidad en vivo'
+    },
     'reservas': {
       title: 'Pizarra Máster de Reservas',
       subtitle: 'Servicios de Transfer Aeropuerto, Turismo Receptivo y Minería'
