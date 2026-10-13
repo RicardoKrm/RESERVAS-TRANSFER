@@ -2,7 +2,7 @@ import React from 'react';
 import { 
   LayoutDashboard, Calendar, CalendarClock, Briefcase, Map as MapIcon, 
   FileCheck, UserCircle, Radio, History, Plane, ChevronLeft, ChevronRight,
-  Sparkles, LogOut, ShieldCheck
+  Sparkles, LogOut, ShieldCheck, Settings
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -15,7 +15,8 @@ export type NavTab =
   | 'documentacion' 
   | 'portal-conductor' 
   | 'gps' 
-  | 'historial';
+  | 'historial'
+  | 'herramientas';
 
 interface SidebarProps {
   activeTab: NavTab;
@@ -87,6 +88,14 @@ export function Sidebar({ activeTab, setActiveTab, collapsed, setCollapsed }: Si
       label: 'Historial de Viajes',
       shortLabel: 'Historial',
       icon: History,
+    },
+    {
+      id: 'herramientas' as NavTab,
+      label: 'Herramientas & Ajustes',
+      shortLabel: 'Ajustes',
+      icon: Settings,
+      badge: 'Admin',
+      badgeColor: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20'
     },
   ];
 

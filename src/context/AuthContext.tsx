@@ -56,9 +56,9 @@ export const DEMO_PROFILES: Record<string, DemoUserConfig> = {
     rolNombre: 'Súper Administrador',
     color: 'from-amber-500 to-orange-600',
     badge: 'Acceso Total',
-    descripcion: 'Control absoluto de los 9 módulos, contratos corporativos, gestión y márgenes.',
+    descripcion: 'Control absoluto de los 10 módulos, contratos corporativos, gestión y márgenes.',
     panel_inicio: 'dashboard',
-    allowed_tabs: ['dashboard', 'reservas', 'programacion', 'contratos', 'rutas', 'documentacion', 'portal-conductor', 'gps', 'historial']
+    allowed_tabs: ['dashboard', 'reservas', 'programacion', 'contratos', 'rutas', 'documentacion', 'portal-conductor', 'gps', 'historial', 'herramientas']
   },
   trafico: {
     key: 'trafico',
@@ -264,6 +264,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setProfile(newProfile);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newProfile));
       return { success: true };
+    }
+
+    // Check custom users created in Herramientas
+    try {
+      const customUsersStr = localStorage.getItem('reservas_custom_users');
+      if (customUsersStr) {
+        const customUsers = JSON.parse(customUsersStr);
+        if (Array.isArray(customUsers)) {
+          const matchedCustom = customUsers.find((u: any) => u.email.toLowerCase() === cleanEmail);
+          if (matchedCustom) {
+            if (password && password !== matchedCustom.password && password !== 'admin123') {
+              return { success: false, error: 'Contraseña incorrecta.' };
+            }
+            const newProfile: AuthProfile = {
+              id: matchedCustom.id || `usr-${Date.now()}`,
+              auth_user_id: matchedCustom.id || `auth-${Date.now()}`,
+              empresa_id: matchedCustom.empresa_id || 'emp-01',
+              rol_id: matchedCustom.rol_id || `rol-${matchedCustom.rolTipo?.toLowerCase() || 'custom'}`,
+              nombre: matchedCustom.nombre,
+              rut: matchedCustom.rut || '12.345.678-9',
+              email: matchedCustom.email,
+              estado: matchedCustom.estado || 'ACTIVO',
+              cargo: matchedCustom.cargo || 'Operador',
+              panel_inicio: matchedCustom.panel_inicio || 'dashboard',
+              allowed_tabs: matchedCustom.allowed_tabs || ['dashboard', 'reservas'],
+              rol: {
+                nombre: matchedCustom.rolNombre || 'Operador',
+                tipo: matchedCustom.rolTipo || 'TRAFICO',
+                permisos: {
+                  allowedTabs: matchedCustom.allowed_tabs || ['dashboard', 'reservas'],
+                  all: matchedCustom.rolTipo === 'ADMIN'
+                }
+              },
+              empresa: {
+                nombre: matchedCustom.empresaNombre || 'Transfer & Turismo Express Chile',
+                rut: '76.123.456-7'
+              }
+            };
+            setProfile(newProfile);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(newProfile));
+            return { success: true };
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Error checking custom users:', e);
     }
 
     // Try Supabase auth

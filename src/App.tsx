@@ -11,6 +11,7 @@ import PortalConductor from './pages/operaciones/PortalConductor';
 import GPS from './pages/operaciones/GPS';
 import Historial from './pages/operaciones/Historial';
 import Dashboard from './pages/Dashboard';
+import Herramientas from './pages/Herramientas';
 import Login from './pages/Login';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CompanyProvider, useCompany } from './contexts/CompanyContext';
@@ -157,6 +158,8 @@ function AppContent() {
         return <GPS />;
       case 'historial':
         return <Historial />;
+      case 'herramientas':
+        return <Herramientas onNavigate={(tab) => setActiveTab(tab)} />;
       default:
         return <Dashboard onNavigate={(tab) => setActiveTab(tab)} />;
     }

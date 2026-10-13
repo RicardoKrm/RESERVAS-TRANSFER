@@ -59,6 +59,10 @@ export function Header({
     'historial': {
       title: 'Historial Operativo & Auditoría',
       subtitle: 'Bitácora consolidada de servicios finalizados y facturados'
+    },
+    'herramientas': {
+      title: 'Panel de Herramientas, Usuarios & Configuración',
+      subtitle: 'Administración de accesos, roles RBAC, datos de empresa y llaves API'
     }
   };
 
