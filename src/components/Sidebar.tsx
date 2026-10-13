@@ -2,8 +2,9 @@ import React from 'react';
 import { 
   Calendar, CalendarClock, Briefcase, Map as MapIcon, 
   FileCheck, UserCircle, Radio, History, Plane, ChevronLeft, ChevronRight,
-  Sparkles
+  Sparkles, LogOut, ShieldCheck
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export type NavTab = 
   | 'reservas' 
@@ -23,7 +24,9 @@ interface SidebarProps {
 }
 
 export function Sidebar({ activeTab, setActiveTab, collapsed, setCollapsed }: SidebarProps) {
-  const menuItems = [
+  const { profile, canAccessTab, signOut } = useAuth();
+
+  const allMenuItems = [
     {
       id: 'reservas' as NavTab,
       label: 'Pizarra de Reservas',
@@ -78,6 +81,9 @@ export function Sidebar({ activeTab, setActiveTab, collapsed, setCollapsed }: Si
     },
   ];
 
+  // Role-based filtering of sidebar modules
+  const menuItems = allMenuItems.filter((item) => canAccessTab(item.id));
+
   return (
     <aside 
       className={`bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col transition-all duration-300 z-40 select-none ${
@@ -123,8 +129,11 @@ export function Sidebar({ activeTab, setActiveTab, collapsed, setCollapsed }: Si
       {/* Nav Menu */}
       <div className="flex-1 py-4 px-3 space-y-1 overflow-y-auto custom-scrollbar">
         {!collapsed && (
-          <div className="px-3 pb-2 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
-            Operaciones y Servicios
+          <div className="px-3 pb-2 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center justify-between">
+            <span>Módulos Permitidos</span>
+            <span className="text-[9px] font-mono text-blue-600 dark:text-blue-400 font-bold">
+              {menuItems.length} / {allMenuItems.length}
+            </span>
           </div>
         )}
 
@@ -164,19 +173,53 @@ export function Sidebar({ activeTab, setActiveTab, collapsed, setCollapsed }: Si
         })}
       </div>
 
-      {/* Footer Info */}
-      <div className="p-3 border-t border-slate-200 dark:border-slate-800 text-[11px]">
+      {/* User Info & Footer */}
+      <div className="p-3 border-t border-slate-200 dark:border-slate-800 text-[11px] space-y-2">
         {!collapsed ? (
-          <div className="bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800/80">
-            <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300 font-bold text-xs">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              SaaS Autónomo
+          <>
+            {profile && (
+              <div className="bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 overflow-hidden">
+                  <div className="w-8 h-8 rounded-lg bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+                    {profile.nombre.split(' ').map(n => n[0]).slice(0, 2).join('')}
+                  </div>
+                  <div className="min-w-0 flex flex-col">
+                    <span className="font-bold text-xs text-slate-800 dark:text-slate-200 truncate leading-tight">
+                      {profile.nombre}
+                    </span>
+                    <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold truncate">
+                      {profile.rol?.nombre || profile.cargo}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={signOut}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                  title="Cerrar Sesión"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            <div className="px-2 py-1 flex items-center justify-between text-[10px] text-slate-400">
+              <span className="flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                RBAC Activo
+              </span>
+              <span>v2.4 SaaS</span>
             </div>
-            <p className="text-[10px] text-slate-400 mt-0.5">8 Módulos Operativos Sincronizados</p>
-          </div>
+          </>
         ) : (
-          <div className="flex justify-center text-slate-400" title="SaaS Autónomo">
-            <Sparkles className="w-4 h-4 text-amber-500" />
+          <div className="flex flex-col items-center gap-2">
+            <button
+              onClick={signOut}
+              className="p-2 rounded-xl text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+              title="Cerrar Sesión"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         )}
       </div>
